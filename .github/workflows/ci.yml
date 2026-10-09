@@ -49,11 +49,19 @@ jobs:
 
       - name: Run affected tasks via Moon CI
         env:
-          MOON_BASE: ${{ github.base_ref || 'main' }}
           MOON_REMOTE_HOST: ${{ secrets.MOON_REMOTE_HOST || 'grpc://127.0.0.1:9092' }}
         run: |
-          echo "Triggering Moon CI with base: $MOON_BASE"
-          pnpm exec moon ci --base "$MOON_BASE" --summary normal
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "Running Moon CI for PR against base: ${{ github.base_ref }}"
+            pnpm exec moon ci --base "${{ github.base_ref }}" --summary normal
+          else
+            echo "Running Moon CI for push on branch against previous commit: ${{ github.event.before }}"
+            BEFORE="${{ github.event.before }}"
+            if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+              BEFORE="HEAD~1"
+            fi
+            pnpm exec moon ci --base "$BEFORE" --summary normal || pnpm exec moon run :build :test :lint --summary normal
+          fi
 
       - name: Publish Moon run report
         uses: moonrepo/run-report-action@v1
