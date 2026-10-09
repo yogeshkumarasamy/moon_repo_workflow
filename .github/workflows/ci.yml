@@ -24,14 +24,28 @@ jobs:
           # Required for moon to determine changed files across commits and base branches
           fetch-depth: 0
 
+      - name: Restore / Cache Bazel Remote Storage
+        uses: actions/cache@v4
+        with:
+          path: /tmp/bazel-cache
+          key: bazel-remote-storage-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            bazel-remote-storage-${{ runner.os }}-${{ github.ref_name }}-
+            bazel-remote-storage-${{ runner.os }}-
+            bazel-remote-storage-
+
       - name: Start Bazel Remote Cache Container
         run: |
+          mkdir -p /tmp/bazel-cache
+          chmod -R 777 /tmp/bazel-cache
           docker run -d --name bazel-remote \
             -p 9092:9092 -p 8080:8080 \
+            -v /tmp/bazel-cache:/data \
             buchgr/bazel-remote-cache:latest \
-            --max_size=5 --dir=/tmp/bazel-cache --grpc_address=0.0.0.0:9092 --http_address=0.0.0.0:8080 --storage_mode=uncompressed
+            --max_size=5 --dir=/data --grpc_address=0.0.0.0:9092 --http_address=0.0.0.0:8080 --storage_mode=uncompressed
           sleep 3
-          curl -I http://localhost:8080/status || echo "Cache status check completed"
+          echo "=== Remote Cache Initial Stats ==="
+          curl -s http://localhost:8080/status || true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -50,18 +64,25 @@ jobs:
       - name: Run affected tasks via Moon CI
         env:
           MOON_REMOTE_HOST: ${{ secrets.MOON_REMOTE_HOST || 'grpc://127.0.0.1:9092' }}
+          MOON_LOG: debug
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "Running Moon CI for PR against base: ${{ github.base_ref }}"
-            pnpm exec moon ci --base "${{ github.base_ref }}" --summary normal
+            pnpm exec moon ci --base "${{ github.base_ref }}" --summary detailed
           else
             echo "Running Moon CI for push on branch against previous commit: ${{ github.event.before }}"
             BEFORE="${{ github.event.before }}"
             if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
               BEFORE="HEAD~1"
             fi
-            pnpm exec moon ci --base "$BEFORE" --summary normal || pnpm exec moon run :build :test :lint --summary normal
+            pnpm exec moon ci --base "$BEFORE" --summary detailed || pnpm exec moon run :build :test :lint --summary detailed
           fi
+
+      - name: Print Remote Cache Final Stats
+        if: always()
+        run: |
+          echo "=== Remote Cache Final Stats ==="
+          curl -s http://localhost:8080/status || true
 
       - name: Publish Moon run report
         uses: moonrepo/run-report-action@v1
