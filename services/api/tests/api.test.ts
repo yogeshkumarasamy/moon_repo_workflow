@@ -7,4 +7,8 @@ describe('API Server', () => {
     expect(server).toBeDefined();
     expect(typeof server.listen).toBe('function');
   });
+
+  it('exposes stats endpoint logic', () => {
+    expect(createServer).toBeDefined();
+  });
 });

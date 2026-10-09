@@ -27,6 +27,19 @@ export function createServer(): http.Server {
       return;
     }
 
+    if (method === 'GET' && url === '/stats') {
+      res.writeHead(200);
+      res.end(
+        JSON.stringify(
+          createApiResponse({
+            totalUsers: usersDb.length,
+            uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
+          })
+        )
+      );
+      return;
+    }
+
     if (method === 'POST' && url === '/users') {
       let body = '';
       req.on('data', (chunk) => {
