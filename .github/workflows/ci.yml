@@ -1,0 +1,76 @@
+name: Moon CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Moon CI (Affected Tasks & Remote Cache)
+    runs-on: ubuntu-latest
+
+    services:
+      bazel-remote:
+        image: buchgr/bazel-remote:v2.4.4
+        ports:
+          - 9092:9092
+          - 8080:8080
+        options: >-
+          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8080/status || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        args:
+          - --max_size=5
+          - --dir=/tmp/bazel-cache
+          - --grpc_address=0.0.0.0:9092
+          - --http_address=0.0.0.0:8080
+          - --storage_mode=uncompressed
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Required for moon to determine changed files across commits and base branches
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Moon toolchain
+        uses: moonrepo/setup-toolchain@v0
+        with:
+          auto-install: true
+
+      - name: Run affected tasks via Moon CI
+        env:
+          MOON_BASE: ${{ github.base_ref || 'main' }}
+          MOON_REMOTE_HOST: ${{ secrets.MOON_REMOTE_HOST || 'grpc://127.0.0.1:9092' }}
+        run: |
+          echo "Triggering Moon CI with base: $MOON_BASE"
+          moon ci --base "$MOON_BASE" --summary normal
+
+      - name: Publish Moon run report
+        uses: moonrepo/run-report-action@v1
+        if: always()
+        with:
+          access-token: ${{ secrets.GITHUB_TOKEN }}

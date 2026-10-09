@@ -1,0 +1,16 @@
+{
+  "name": "moon-repo-workflow",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@8.15.6",
+  "scripts": {
+    "build": "moon run :build",
+    "test": "moon run :test",
+    "lint": "moon run :lint"
+  },
+  "devDependencies": {
+    "@moonrepo/cli": "^2.6.1",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

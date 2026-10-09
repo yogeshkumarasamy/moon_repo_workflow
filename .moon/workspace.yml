@@ -1,0 +1,13 @@
+# https://moonrepo.dev/docs/config/workspace
+projects:
+  - 'apps/*'
+  - 'services/*'
+  - 'packages/*'
+
+vcs:
+  defaultBranch: 'main'
+  provider: 'github'
+
+remote:
+  api: 'grpc'
+  host: 'grpc://127.0.0.1:9092'

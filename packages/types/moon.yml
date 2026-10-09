@@ -1,0 +1,22 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'typescript'
+stack: 'backend'
+
+tasks:
+  build:
+    command: 'pnpm run build'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+      - 'package.json'
+    outputs:
+      - 'dist'
+
+  lint:
+    command: 'pnpm run lint'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'

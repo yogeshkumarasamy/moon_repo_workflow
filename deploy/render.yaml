@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: moon-bazel-remote-cache
+    env: docker
+    plan: free
+    dockerfilePath: ./deploy/Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080

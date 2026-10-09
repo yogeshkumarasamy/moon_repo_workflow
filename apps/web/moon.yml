@@ -1,0 +1,43 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+language: 'typescript'
+stack: 'frontend'
+
+dependsOn:
+  - 'ui'
+  - 'utils'
+  - 'types'
+
+tasks:
+  build:
+    command: 'pnpm run build'
+    deps:
+      - '^:build'
+    inputs:
+      - 'src/**/*'
+      - 'index.html'
+      - 'vite.config.ts'
+      - 'tsconfig.json'
+      - '/tsconfig.base.json'
+      - 'package.json'
+    outputs:
+      - 'dist'
+
+  test:
+    command: 'pnpm run test'
+    deps:
+      - '^:build'
+    inputs:
+      - 'src/**/*'
+      - 'tests/**/*'
+      - 'tsconfig.json'
+      - 'package.json'
+
+  lint:
+    command: 'pnpm run lint'
+    deps:
+      - '^:build'
+    inputs:
+      - 'src/**/*'
+      - 'tests/**/*'
+      - 'tsconfig.json'
