@@ -9,5 +9,5 @@ vcs:
   provider: 'github'
 
 remote:
-  api: 'grpc'
-  host: 'grpc://127.0.0.1:9092'
+  api: 'http'
+  host: 'https://moon-bazel-cache.onrender.com'
