@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: moon-bazel-cache
+    env: docker
+    plan: free
+    dockerfilePath: deploy/Dockerfile
+    healthCheckPath: /status
+    envVars:
+      - key: PORT
+        value: 8080

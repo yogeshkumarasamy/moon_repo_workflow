@@ -65,6 +65,14 @@ jobs:
         env:
           MOON_REMOTE_HOST: ${{ secrets.MOON_REMOTE_HOST || 'grpc://127.0.0.1:9092' }}
         run: |
+          if [[ "$MOON_REMOTE_HOST" =~ ^https?:// ]]; then
+            export MOON_REMOTE_API="http"
+            echo "Using HTTP Remote Cache API for $MOON_REMOTE_HOST"
+          else
+            export MOON_REMOTE_API="grpc"
+            echo "Using gRPC Remote Cache API for $MOON_REMOTE_HOST"
+          fi
+
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "Running Moon CI for PR against base: ${{ github.base_ref }}"
             pnpm exec moon ci --base "${{ github.base_ref }}" --summary detailed
