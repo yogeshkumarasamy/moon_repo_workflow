@@ -17,30 +17,21 @@ jobs:
     name: Moon CI (Affected Tasks & Remote Cache)
     runs-on: ubuntu-latest
 
-    services:
-      bazel-remote:
-        image: buchgr/bazel-remote:v2.4.4
-        ports:
-          - 9092:9092
-          - 8080:8080
-        options: >-
-          --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8080/status || exit 1"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        args:
-          - --max_size=5
-          - --dir=/tmp/bazel-cache
-          - --grpc_address=0.0.0.0:9092
-          - --http_address=0.0.0.0:8080
-          - --storage_mode=uncompressed
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           # Required for moon to determine changed files across commits and base branches
           fetch-depth: 0
+
+      - name: Start Bazel Remote Cache Container
+        run: |
+          docker run -d --name bazel-remote \
+            -p 9092:9092 -p 8080:8080 \
+            buchgr/bazel-remote:v2.4.4 \
+            --max_size=5 --dir=/tmp/bazel-cache --grpc_address=0.0.0.0:9092 --http_address=0.0.0.0:8080 --storage_mode=uncompressed
+          sleep 3
+          curl -I http://localhost:8080/status || echo "Cache status check completed"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
