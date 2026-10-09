@@ -32,6 +32,8 @@ tasks:
 
   lint:
     command: 'pnpm run lint'
+    deps:
+      - '^:build'
     inputs:
       - 'src/**/*'
       - 'tests/**/*'
