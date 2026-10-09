@@ -18,6 +18,15 @@ export function computeAverage(values: number[]): number {
   return Number((sum / values.length).toFixed(2));
 }
 
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 export function validateUser(dto: CreateUserDto): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
   if (!dto.name || dto.name.trim().length < 2) {
