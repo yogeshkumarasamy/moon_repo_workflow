@@ -47,18 +47,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Setup Moon toolchain
-        uses: moonrepo/setup-toolchain@v0
-        with:
-          auto-install: true
-
       - name: Run affected tasks via Moon CI
         env:
           MOON_BASE: ${{ github.base_ref || 'main' }}
           MOON_REMOTE_HOST: ${{ secrets.MOON_REMOTE_HOST || 'grpc://127.0.0.1:9092' }}
         run: |
           echo "Triggering Moon CI with base: $MOON_BASE"
-          moon ci --base "$MOON_BASE" --summary normal
+          pnpm exec moon ci --base "$MOON_BASE" --summary normal
 
       - name: Publish Moon run report
         uses: moonrepo/run-report-action@v1
