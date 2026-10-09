@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { formatDate, formatCurrency, computeAverage, validateUser, createApiResponse } from '../src/index.js';
+import { formatDate, formatCurrency, computeAverage, validateUser, createApiResponse, slugify } from '../src/index.js';
 
 describe('@repo/utils', () => {
   it('formats dates properly', () => {
     const formatted = formatDate(new Date('2026-10-09T00:00:00Z'));
     expect(formatted).toBe('2026-10-09');
+  });
+
+  it('slugifies string properly', () => {
+    expect(slugify('Hello World & Friends!')).toBe('hello-world-friends');
   });
 
   it('formats currency properly', () => {
