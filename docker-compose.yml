@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   bazel-remote:
-    image: buchgr/bazel-remote:v2.4.4
+    image: buchgr/bazel-remote-cache:latest
     container_name: moon-bazel-remote-cache
     restart: unless-stopped
     ports:
@@ -15,7 +15,7 @@ services:
       - '--dir=/data'
       - '--grpc_address=0.0.0.0:9092'
       - '--http_address=0.0.0.0:8080'
-      - '--storage_mode=zstd'
+      - '--storage_mode=uncompressed'
 
 volumes:
   bazel-cache-data:

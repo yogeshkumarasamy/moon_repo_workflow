@@ -1,6 +1,6 @@
 # Remote Caching Architecture & Free Hosting Evaluation
 
-This document outlines the evaluation of free hosting services for running a Bazel Remote Cache (`bazel-remote` or managed Bazel REAPI) with **Moonrepo**, along with instructions for both local and cloud setups.
+This document outlines the evaluation of free hosting services for running a Bazel Remote Cache (`bazel-remote-cache` or managed Bazel REAPI) with **Moonrepo**, along with instructions for both local and cloud setups.
 
 ---
 
@@ -34,7 +34,7 @@ When tasks run:
 ### Option A: Koyeb (Self-Hosted Docker, 24/7 Free)
 1. Sign up at [koyeb.com](https://www.koyeb.com).
 2. Create a new service selecting **Docker Image**:
-   - Image: `buchgr/bazel-remote:v2.4.4`
+   - Image: `buchgr/bazel-remote-cache:latest`
    - Command: `--max_size=5 --dir=/tmp/cache --http_address=0.0.0.0:8080 --storage_mode=uncompressed`
    - Port: `8080` (HTTP)
 3. Copy your Koyeb public URL (e.g. `https://bazel-remote-myuser.koyeb.app`).
@@ -73,7 +73,6 @@ docker compose down
 
 ## 4. In-Workflow GitHub Actions Remote Cache
 
-In `.github/workflows/ci.yml`, we run `buchgr/bazel-remote` directly as a service container in the CI runner job:
-- **Port:** `9092` (gRPC)
-- **Cache Persistence:** Backed by GitHub Actions cache (`actions/cache`) for the `/data` directory.
-- **Failover:** If `MOON_REMOTE_HOST` secret is set, Moon connects directly to your external cloud instance. If not set, it connects to the local runner service container.
+In `.github/workflows/ci.yml`, we run `buchgr/bazel-remote-cache:latest` directly in the CI runner job:
+- **Port:** `9092` (gRPC) & `8080` (HTTP)
+- **Failover:** If `MOON_REMOTE_HOST` secret is set, Moon connects directly to your external cloud instance. If not set, it connects to the runner's bazel cache container.

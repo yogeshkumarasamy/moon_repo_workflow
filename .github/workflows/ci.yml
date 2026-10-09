@@ -28,7 +28,7 @@ jobs:
         run: |
           docker run -d --name bazel-remote \
             -p 9092:9092 -p 8080:8080 \
-            buchgr/bazel-remote:v2.4.4 \
+            buchgr/bazel-remote-cache:latest \
             --max_size=5 --dir=/tmp/bazel-cache --grpc_address=0.0.0.0:9092 --http_address=0.0.0.0:8080 --storage_mode=uncompressed
           sleep 3
           curl -I http://localhost:8080/status || echo "Cache status check completed"
