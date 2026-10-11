@@ -9,5 +9,7 @@ vcs:
   provider: 'github'
 
 remote:
-  api: 'http'
-  host: 'https://moon-bazel-cache.onrender.com'
+  api: 'grpc'
+  host: 'grpcs://remote.buildbuddy.io'
+  auth:
+    token: 'BUILDBUDDY_API_KEY'
