@@ -67,9 +67,16 @@ jobs:
           MOON_REMOTE_HOST: ${{ secrets.MOON_REMOTE_HOST || 'grpcs://remote.buildbuddy.io' }}
         run: |
           if [ -n "$BUILDBUDDY_API_KEY" ]; then
-            echo "BuildBuddy API Key detected. Using grpcs://remote.buildbuddy.io"
+            echo "BuildBuddy API Key detected. Configuring x-buildbuddy-api-key header..."
             export MOON_REMOTE_HOST="grpcs://remote.buildbuddy.io"
             export MOON_REMOTE_API="grpc"
+            # BuildBuddy requires x-buildbuddy-api-key header over gRPC metadata
+            cat << 'EOF' >> .moon/workspace.yml
+    headers:
+      'x-buildbuddy-api-key': '${BUILDBUDDY_API_KEY}'
+EOF
+            # Replace placeholder with actual secret in the runner workspace
+            sed -i "s|\${BUILDBUDDY_API_KEY}|$BUILDBUDDY_API_KEY|g" .moon/workspace.yml
           elif [[ "$MOON_REMOTE_HOST" =~ ^https?:// ]]; then
             export MOON_REMOTE_API="http"
             echo "Using HTTP Remote Cache API for $MOON_REMOTE_HOST"
