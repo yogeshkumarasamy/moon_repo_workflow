@@ -63,14 +63,19 @@ jobs:
 
       - name: Run Moon Tasks
         env:
-          MOON_REMOTE_HOST: ${{ secrets.MOON_REMOTE_HOST || 'grpc://127.0.0.1:9092' }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          MOON_REMOTE_HOST: ${{ secrets.MOON_REMOTE_HOST || 'grpcs://remote.buildbuddy.io' }}
         run: |
-          if [[ "$MOON_REMOTE_HOST" =~ ^https?:// ]]; then
+          if [ -n "$BUILDBUDDY_API_KEY" ]; then
+            echo "BuildBuddy API Key detected. Using grpcs://remote.buildbuddy.io"
+            export MOON_REMOTE_HOST="grpcs://remote.buildbuddy.io"
+            export MOON_REMOTE_API="grpc"
+          elif [[ "$MOON_REMOTE_HOST" =~ ^https?:// ]]; then
             export MOON_REMOTE_API="http"
             echo "Using HTTP Remote Cache API for $MOON_REMOTE_HOST"
           else
             export MOON_REMOTE_API="grpc"
-            echo "Using gRPC Remote Cache API for $MOON_REMOTE_HOST"
+            echo "Using fallback local gRPC Remote Cache API for $MOON_REMOTE_HOST"
           fi
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
